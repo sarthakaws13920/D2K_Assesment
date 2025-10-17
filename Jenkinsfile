@@ -1,66 +1,41 @@
 pipeline {
     agent any
 
-    parameters {
-        choice(
-            name: 'DEPLOY_ENV', 
-            choices: ['UAT', 'PROD'], 
-            description: 'Select environment to deploy'
-        )
-    }
-
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('docker-credentials')
-        SSH_KEY = credentials('app-ec2')
-        IMAGE_NAME = "sarthak13920/dotnet-api"
-        TARGET_IP = "172.31.27.254"
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub-credentials-id') // Add your Docker Hub credentials in Jenkins
     }
 
     stages {
-
-        // Stage 1: Checkout code from GitHub
         stage('Checkout') {
             steps {
-                git 'https://github.com/sarthakaws13920/D2K_Assesment.git'
+                git url: 'https://github.com/sarthakaws13920/D2K_Assesment.git', branch: 'master'
             }
         }
 
-        // Stage 2: Build Docker image
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
-            }
-        }
-
-        // Stage 3: Push Docker image to Docker Hub
-        stage('Push to Docker Hub') {
-            steps {
-                withCredentials([
-                    usernamePassword(
-                        credentialsId: 'docker-credentials', 
-                        usernameVariable: 'USER', 
-                        passwordVariable: 'PASS'
-                    )
-                ]) {
-                    sh '''
-                        echo $PASS | docker login -u $USER --password-stdin
-                        docker push $IMAGE_NAME:$BUILD_NUMBER
-                    '''
+                script {
+                    docker.build("sarthak13920/dotnet-api:latest")
                 }
             }
         }
 
-        // Stage 4: Deploy Docker image to EC2
+        stage('Push to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('https://index.docker.io/v1/', 'DOCKERHUB_CREDENTIALS') {
+                        docker.image("sarthak13920/dotnet-api:latest").push()
+                    }
+                }
+            }
+        }
+
         stage('Deploy to EC2') {
             steps {
-                sshagent(['app-ec2']) {
+                sshagent(['ec2-ssh-key-id']) { // Add your EC2 SSH key in Jenkins credentials
                     sh """
-                    ssh -o StrictHostKeyChecking=no ec2-user@$TARGET_IP '
-                        docker pull $IMAGE_NAME:$BUILD_NUMBER &&
-                        docker stop dotnet-api || true &&
-                        docker rm dotnet-api || true &&
-                        docker run -d -p 80:80 --name dotnet-api $IMAGE_NAME:$BUILD_NUMBER
-                    '
+                        ssh -o StrictHostKeyChecking=no ec2-user@<EC2_PUBLIC_IP> \\
+                        'docker pull sarthak13920/dotnet-api:latest && docker stop dotnet-api || true && docker rm dotnet-api || true && docker run -d --name dotnet-api -p 5000:80 sarthak13920/dotnet-api:latest'
                     """
                 }
             }
