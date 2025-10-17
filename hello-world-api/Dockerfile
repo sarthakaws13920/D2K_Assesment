@@ -1,28 +1,18 @@
-# Purpose: To run .NET application
-# Maintainer: Sarthak singh
-# ---------- BUILD STAGE ----------
+# Use .NET SDK image to build the app
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /app
 
 # Copy csproj and restore dependencies
-COPY hello-world-api/hello-world-api.csproj ./hello-world-api/
-RUN dotnet restore ./hello-world-api/hello-world-api.csproj
+COPY hello-world-api.csproj ./
+RUN dotnet restore hello-world-api.csproj
 
-# Copy the full project
+# Copy everything and build the app
 COPY . .
+RUN dotnet publish hello-world-api.csproj -c Release -o /out
 
-# Build and publish
-RUN dotnet publish -c Release -o /app/publish ./hello-world-api/hello-world-api.csproj
-
-# ---------- RUNTIME STAGE ----------
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runtime
+# Use the ASP.NET runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
-
-# Copy the published output from the build stage
-COPY --from=build /app/publish .
-
-# Set the entrypoint
+COPY --from=build /out .
+EXPOSE 80
 ENTRYPOINT ["dotnet", "hello-world-api.dll"]
-
-
-
