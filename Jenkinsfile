@@ -17,7 +17,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build("sarthak13920/dotnet-api:latest")
+                    docker.build("arthak13920/dotnet-api:latest", "hello-world-api")
                 }
             }
         }
