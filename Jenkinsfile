@@ -35,7 +35,7 @@ pipeline {
     steps {
         sshagent(['ec2-ssh-key-id']) {
             sh """
-                 ssh -o StrictHostKeyChecking=no root@$EC2_PRIVATE_IP 'docker pull sarthak13920/dotnet-api:latest && docker stop dotnet-api || true && docker rm dotnet-api || true && docker run -d --name dotnet-api -p 5000:80 sarthak13920/dotnet-api:latest'
+                 ssh -o StrictHostKeyChecking=no ec2-user@$EC2_PRIVATE_IP 'docker pull sarthak13920/dotnet-api:latest && docker stop dotnet-api || true && docker rm dotnet-api || true && docker run -d --name dotnet-api -p 5000:80 sarthak13920/dotnet-api:latest'
             """
            }
         }
