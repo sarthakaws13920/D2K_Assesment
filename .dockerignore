@@ -1,0 +1,21 @@
+# Ignore build and object folders
+bin/
+obj/
+
+# Ignore user-specific and IDE files
+*.user
+*.suo
+*.vs/
+.vscode/
+
+# Ignore version control files
+.git
+.gitignore
+
+# Ignore solution and documentation files
+*.sln
+*.md
+*.log
+
+# Ignore any local environment files
+appsettings.Development.json
