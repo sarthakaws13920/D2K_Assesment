@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-credentials') // Add your Docker Hub credentials in Jenkins
+        EC2_PRIVATE_IP = "172.31.27.254"
     }
 
     stages {
@@ -34,7 +35,7 @@ pipeline {
             steps {
                 sshagent(['ec2-ssh-key-id']) { // Add your EC2 SSH key in Jenkins credentials
                     sh """
-                        ssh -o StrictHostKeyChecking=no ec2-user@<172.31.27.254> \\
+                        ssh -o StrictHostKeyChecking=no ec2-user@<172.31.27.254 \\
                         'docker pull sarthak13920/dotnet-api:latest && docker stop dotnet-api || true && docker rm dotnet-api || true && docker run -d --name dotnet-api -p 5000:80 sarthak13920/dotnet-api:latest'
                     """
                 }
