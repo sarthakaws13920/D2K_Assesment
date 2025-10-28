@@ -15,4 +15,6 @@ FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /out .
 EXPOSE 5001
+EXPOSE 8080
+EXPOSE 80
 ENTRYPOINT ["dotnet", "hello-world-api.dll"]
