@@ -14,5 +14,5 @@ RUN dotnet publish hello-world-api.csproj -c Release -o /out
 FROM mcr.microsoft.com/dotnet/aspnet:7.0
 WORKDIR /app
 COPY --from=build /out .
-EXPOSE 80
+EXPOSE 5001
 ENTRYPOINT ["dotnet", "hello-world-api.dll"]
